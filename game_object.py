@@ -139,10 +139,32 @@ class YellowBird(Bird):
     (self.body.velocity).
     """
 
-    ### ---------------------- ###
-    ### SU IMPLEMENTACION AQUI ###
-    ### ---------------------- ###
-    pass
+    def __init__(self, impulse_vector, x, y, space, power_multiplier=2):
+        super().__init__("assets/img/yellow.png", impulse_vector, x, y, space, radius=12)
+        self.scale = 0.03
+        self.power_multiplier = power_multiplier
+        self.used_power = False
+
+    def activate_power(self):
+        if self.used_power:
+            return
+
+        velocity = self.body.velocity
+
+        if velocity.length == 0:
+            return
+
+        direction = velocity.normalized()
+
+        boost = (
+            direction
+            * velocity.length
+            * self.power_multiplier
+        )
+
+        self.body.apply_impulse_at_local_point(boost)
+
+        self.used_power = True
 
 
 class BlueBird(Bird):
@@ -163,7 +185,27 @@ class BlueBird(Bird):
     como argumento. Esa decision de diseno es parte del ejercicio.
     """
 
-    ### ---------------------- ###
-    ### SU IMPLEMENTACION AQUI ###
-    ### ---------------------- ###
-    pass
+    def __init__(self, impulse_vector, x, y, space, used_power=False):
+        super().__init__("assets/img/blue.png", impulse_vector, x, y, space, radius=10)
+        self.scale = 0.12
+        self.used_power = used_power
+
+    def activate_power(self, space):
+        if self.used_power:
+            return []
+
+        velocity = self.body.velocity
+
+        if velocity.length == 0:
+            return []
+
+        new_birds = []
+
+        for extra_angle in [math.radians(30), 0, math.radians(-30)]:
+            impulse_vector = ImpulseVector(0, 0)
+            bird = BlueBird(impulse_vector, self.center_x, self.center_y, space, used_power=True)
+            bird.body.velocity = velocity.rotated(extra_angle)
+            new_birds.append(bird)
+
+        self.used_power = True
+        return new_birds
